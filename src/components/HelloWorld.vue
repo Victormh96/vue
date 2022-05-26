@@ -11,11 +11,9 @@
         <a-col :span="24">
           <a-table :columns="columns" :dataSource="dataSource" :loading="loading" rowKey="id" bordered>
             <!--Estado-->
-            <template #estado="{ record }">
-              <a-tag color="#87d068" v-if="record.estado == 'Activado'">{{
-                  record.estado
-              }}</a-tag>
-              <a-tag color="#f50" v-else>{{ record.estado }}</a-tag>
+            <template #userId="{ record }">
+              <a-tag color="#87d068" v-if="record.userId == 1">Nuevo</a-tag>
+              <a-tag color="#f50" v-else>Antiguo</a-tag>
             </template>
             <!--Acciones-->
             <template #acciones="{ record }">
@@ -40,14 +38,14 @@
       <a-modal v-model:visible="add" title="Guardar">
         <!--Formulario-->
         <a-form id="Form" layout="vertical" autocomplete="off" :model="formState" @finish="post">
-          <a-form-item label="Name" name="name" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-input type="text" v-model:value="formState.name" placeholder="..." />
+          <a-form-item label="UserId" name="userId" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-input type="number" v-model:value="formState.userId" placeholder="Id" />
           </a-form-item>
-          <a-form-item label="Email" name="email" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-input type="email" v-model:value="formState.email" placeholder="..." />
+          <a-form-item label="Titulo" name="title" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-input type="text" v-model:value="formState.title" placeholder="titulo" />
           </a-form-item>
-          <a-form-item label="Estado" name="estado" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-textarea v-model:value="formState.estado" placeholder="..." :rows="4" showCount :maxlength="100" />
+          <a-form-item label="Body" name="body" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-textarea v-model:value="formState.body" placeholder="..." :rows="4" showCount :maxlength="100" />
           </a-form-item>
         </a-form>
         <!--Footer-->
@@ -60,14 +58,14 @@
       <a-modal v-model:visible="update" title="Editar">
         <!--Formulario-->
         <a-form id="Form" layout="vertical" autocomplete="off" :model="formState" @finish="put">
-          <a-form-item label="Name" name="name" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-input type="text" v-model:value="formState.name" placeholder="..." />
+          <a-form-item label="UserId" name="userId" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-input type="number" v-model:value="formState.userId" placeholder="Id" />
           </a-form-item>
-          <a-form-item label="Email" name="email" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-input type="email" v-model:value="formState.email" placeholder="..." />
+          <a-form-item label="Titulo" name="title" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-input type="text" v-model:value="formState.title" placeholder="titulo" />
           </a-form-item>
-          <a-form-item label="Estado" name="estado" :rules="[{ required: true, message: 'Requerido' }]">
-            <a-textarea v-model:value="formState.estado" placeholder="..." :rows="4" showCount :maxlength="100" />
+          <a-form-item label="Body" name="body" :rules="[{ required: true, message: 'Requerido' }]">
+            <a-textarea v-model:value="formState.body" placeholder="..." :rows="4" showCount :maxlength="100" />
           </a-form-item>
         </a-form>
         <!--Footer-->
@@ -98,30 +96,25 @@ const columns = [
     key: "id",
   },
   {
-    title: "Role",
-    dataIndex: "role.descripcion",
-    key: "role.descripcion",
+    title: "Usuario",
+    dataIndex: "userId",
+    slots: { customRender: "userId" },
   },
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
+    title: "Titulo",
+    dataIndex: "title",
+    key: "title",
   },
   {
-    title: "Email",
-    dataIndex: "email",
-    key: "email",
-  },
-  {
-    title: "Estado",
-    dataIndex: "estado",
-    slots: { customRender: "estado" },
+    title: "Body",
+    dataIndex: "body",
+    key: "body",
   },
   {
     title: "Acciónes",
     dataIndex: "acciones",
     slots: { customRender: "acciones" },
-  }
+  },
 ];
 
 export default {
@@ -141,21 +134,21 @@ export default {
     //Formulario
     const formState = reactive({
       id: null,
-      name: null,
-      email: null,
-      estado: null
+      userId: null,
+      title: null,
+      body: null
     });
 
     const { resetFields } = useForm(formState, reactive({}));
 
     return {
-      //Modal
+      //modal
       add,
       update,
 
       //Post
       formState,
-      resetFields,
+      resetFields
     };
   },
 
@@ -173,22 +166,23 @@ export default {
     //Get
     get() {
       axios
-        .get("http://api.test/api/user")
+        .get("https://jsonplaceholder.typicode.com/posts")
         .then((response) => {
           this.dataSource = response.data;
         })
         .catch((e) => console.log(e));
     },
 
-    //post
+    //Post
     post(values) {
       axios
-        .post("http://api.test/api/user", values)
+        .post("https://jsonplaceholder.typicode.com/posts", values)
         .then((response) => {
           this.get();
           this.resetFields();
           this.add = false;
           message.success("Guardado");
+          return response;
         })
         .catch((e) => console.log(e));
     },
@@ -196,12 +190,12 @@ export default {
     //Patch
     patch(id) {
       axios
-        .get("http://api.test/api/user/" + id)
+        .get("https://jsonplaceholder.typicode.com/posts/" + id)
         .then((response) => {
           this.formState.id = response.data.id;
-          this.formState.name = response.data.name;
-          this.formState.email = response.data.email;
-          this.formState.estado = response.data.estado;
+          this.formState.userId = response.data.userId;
+          this.formState.title = response.data.title;
+          this.formState.body = response.data.body;
           this.update = true;
         })
         .catch((e) => console.log(e));
@@ -210,23 +204,25 @@ export default {
     //Put
     put(values) {
       axios
-        .put("http://api.test/api/user/" + this.formState.id, values)
+        .put("https://jsonplaceholder.typicode.com/posts/" + this.formState.id, values)
         .then((response) => {
           this.get();
           this.resetFields();
           this.update = false;
-          message.warning("Editado");
+          message.warning("Editado", 2.5);
+          return response;
         })
         .catch((e) => console.log(e));
     },
 
-    //Destroy
+    //Delete
     destroy(id) {
       axios
-        .delete("http://api.test/api/user/" + id)
+        .delete("https://jsonplaceholder.typicode.com/posts/" + id)
         .then((response) => {
           this.get();
-          message.error("Eliminado");
+          message.error("Eliminado", 2.5);
+          return response;
         })
         .catch((e) => console.log(e));
     },
